@@ -4,6 +4,8 @@ module ALU (funct3, funct7, src_A_i, src_B_i, result_o);
     input [31:0] src_A_i, src_B_i;
     output reg [31:0] result_o;
 
+    reg [63:0] mul_result;
+
     always @(funct3, funct7, src_A_i, src_B_i) begin
         case (funct7)
             7'b0000000: begin
@@ -50,3 +52,4 @@ module ALU (funct3, funct7, src_A_i, src_B_i, result_o);
 
         endcase
     end
+endmodule
