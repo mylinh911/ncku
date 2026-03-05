@@ -5,6 +5,8 @@ module ALU (funct3, funct7, src_A_i, src_B_i, result_o);
     output reg [31:0] result_o;
 
     reg [63:0] mul_result;
+    wire signed [63:0] src_A_i_s64 = {{32{src_A_i[31]}}, src_A_i};
+    wire [63:0] src_B_i_u64 = {32'b0, src_B_i};
 
     always @(funct3, funct7, src_A_i, src_B_i) begin
         case (funct7)
@@ -24,7 +26,7 @@ module ALU (funct3, funct7, src_A_i, src_B_i, result_o);
             7'b0100000: begin
                 case (funct3)
                     3'b000: result_o = src_A_i - src_B_i; //SUB
-                    3'b101: result_o = src_A_i >>> src_B_i[4:0]; //SRA
+                    3'b101: result_o = $signed(src_A_i) >>> src_B_i[4:0]; //SRA
                     default: result_o = 0;
                 endcase
             end
@@ -39,7 +41,7 @@ module ALU (funct3, funct7, src_A_i, src_B_i, result_o);
                     result_o = mul_result[63:32];
                 end
                 3'b010: begin // MULHSU
-                    mul_result = $signed(src_A_i) * src_B_i;
+                    mul_result = src_A_i_s64 * src_B_i_u64;
                     result_o = mul_result[63:32];
                 end
                 3'b011: begin // MULHU
