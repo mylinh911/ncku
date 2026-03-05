@@ -28,11 +28,23 @@ module RISCVALU (funct3, funct7, src_A_i, src_B_i, result_o);
             end
             7'b0000001: begin
                 case (funct3)
-                    3'b000: result_o = (src_A_i * src_B_i)[31:0]; //MUL
-                    3'b001: result_o = ($signed(src_A_i) * $signed(src_B_i))[63:32]; //MULH
-                    3'b010: result_o = ($signed(src_A_i) * src_B_i)[63:32]; //MULHSU
-                    3'b011: result_o = (src_A_i * $signed(src_B_i))[63:32]; //MULHU
-                    default: result_o = 0;
+                3'b000: begin // MUL
+                    mul_result = src_A_i * src_B_i;
+                    result_o = mul_result[31:0];
+                end
+                3'b001: begin // MULH
+                    mul_result = $signed(src_A_i) * $signed(src_B_i);
+                    result_o = mul_result[63:32];
+                end
+                3'b010: begin // MULHSU
+                    mul_result = $signed(src_A_i) * src_B_i;
+                    result_o = mul_result[63:32];
+                end
+                3'b011: begin // MULHU
+                    mul_result = src_A_i * src_B_i;
+                    result_o = mul_result[63:32];
+                end
+                default: result_o = 0;
                 endcase
             end
 
