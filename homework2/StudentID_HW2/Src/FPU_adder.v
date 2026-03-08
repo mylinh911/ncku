@@ -26,24 +26,46 @@ module FPU_adder(
 	assign Zero_b = (exp_b == 0) && (frac_b == 0);
 
 	// Right-shift the mantissa of the operand with the smaller exponent
-	wire delta_exp;
+	wire [7:0] delta_exp;
 	assign delta_exp = (exp_a > exp_b) ? (exp_a - exp_b) : (exp_b - exp_a);
 
 	wire [23:0] shifted_frac_a, shifted_frac_b;
 	assign shifted_frac_a = (exp_a > exp_b) ? {1'b1, frac_a} : ({1'b1, frac_a} >> delta_exp);
 	assign shifted_frac_b = (exp_b > exp_a) ? {1'b1, frac_b} : ({1'b1, frac_b} >> delta_exp);
 
-	// Calculate guard, round, and sticky bits for rounding
-	wire guard_bit, round_bit, sticky_bit;
-	assign guard_bit = (delta_exp != 0) ? ((exp_a > exp_b) ? frac_b[delta_exp -1] : frac_a[delta_exp -1]) : 0;
-	assign round_bit = (delta_exp != 0) ? ((exp_a > exp_b) ? frac_b[delta_exp -2] : frac_a[delta_exp -2]) : 0;
-	assign sticky_bit = (delta_exp != 0) ? ((exp_a > exp_b) ? |frac_b[delta_exp -3:0] : |frac_a[delta_exp -3:0]) : 0;
+	wire [23:0] small_frac = (exp_a > exp_b) ? {1'b1, frac_b} : {1'b1, frac_a};
 
-	wire [24:0] sum_frac, sum_frac_norm;
-	wire [7:0] sum_exp, sum_exp_norm;
-	wire sum_sign;
+	// Calculate guard, round, and sticky bits for rounding
+	reg guard_bit, round_bit, sticky_bit;
+	// assign guard_bit = (delta_exp != 0) ? ((exp_a > exp_b) ? frac_b[delta_exp -1] : frac_a[delta_exp -1]) : 0;
+	// assign round_bit = (delta_exp != 0) ? ((exp_a > exp_b) ? frac_b[delta_exp -2] : frac_a[delta_exp -2]) : 0;
+	// assign sticky_bit = (delta_exp != 0) ? ((exp_a > exp_b) ? |frac_b[delta_exp -3:0] : |frac_a[delta_exp -3:0]) : 0;
+
+	reg [24:0] sum_frac, sum_frac_norm;
+	reg [7:0] sum_exp, sum_exp_norm;
+	reg sum_sign;
+
+	integer i;
 
 	always @(*) begin
+		guard_bit  = 1'b0;
+		round_bit  = 1'b0;
+		sticky_bit = 1'b0;
+
+		if (delta_exp >= 1)
+			guard_bit = small_frac[delta_exp-1];
+
+		if (delta_exp >= 2)
+			round_bit = small_frac[delta_exp-2];
+
+		if (delta_exp >= 3) begin
+			sticky_bit = 1'b0;
+			for (i = 0; i <= 23; i = i + 1) begin
+				if (i < delta_exp-2)
+					sticky_bit = sticky_bit | small_frac[i];
+			end
+		end
+		
 		if (!(NaN_a || NaN_b || Inf_a || Inf_b || Zero_a || Zero_b)) begin
 			sum_exp = (exp_a > exp_b) ? exp_a : exp_b; // The exponent of the result is the larger one
 
