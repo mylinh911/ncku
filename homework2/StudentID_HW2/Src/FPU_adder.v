@@ -128,7 +128,7 @@ module FPU_adder(
 
 
 //put ur design here
-	always @(posedge clk or posedge rst) begin
+	always @(negedge clk or posedge rst) begin
 		if (rst) begin
 			output_c <= 32'b0;
 			output_c_ready <= 1'b1;
