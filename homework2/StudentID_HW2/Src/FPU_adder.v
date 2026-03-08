@@ -93,7 +93,7 @@ module FPU_adder(
 			// Handle carry, cancellation
 			if (sum_frac[24]) begin
 				sum_frac_norm = sum_frac >> 1;
-				sum_exp_norm = sum_exp + 1;
+				sum_exp_norm = sum_exp + 8'd1;
 			end else begin
 				sum_exp_norm = sum_exp;
 				sum_frac_norm = sum_frac;
@@ -101,15 +101,15 @@ module FPU_adder(
 				for (i = 0; i < 24; i = i + 1) begin
 					if ((sum_frac_norm[23] == 0) && (sum_exp_norm > 0)) begin
 						sum_frac_norm = sum_frac_norm << 1;
-						sum_exp_norm  = sum_exp_norm - 1;
+						sum_exp_norm  = sum_exp_norm - 8'd1;
 					end
 				end
 			end
 			// Apply rounding policy using GRS
 			if (guard_bit && (round_bit || sticky_bit || sum_frac_norm[0])) begin
-				sum_frac_norm = sum_frac_norm + 1;
+				sum_frac_norm = sum_frac_norm + 24'd1;
 				if (sum_frac_norm[24]) begin
-					sum_exp_norm = sum_exp_norm + 1;
+					sum_exp_norm = sum_exp_norm + 8'd1;
 					sum_frac_norm = sum_frac_norm >> 1;
 				end
 			end
