@@ -211,27 +211,6 @@ module FPU_adder(
 					output_c = {sign_b, 8'hFF, 23'b0}; // Inf
 					output_c_ready = 1'b1;
 				end
-                if (sign_a == sign_b) begin
-                    if (!sub) begin
-                        output_c = {sign_a, 8'hFF, 23'b0}; // Inf
-                        output_c_ready = 1'b1;
-                    end 
-                    else begin
-                        output_c = 32'hFFC00000;
-                        output_c_ready = 1'b1;
-                    end
-                end
-                // sign mismatch inf (+inf + -inf)
-                else begin
-                    if (sub) begin
-                        output_c = {sign_a, 8'hFF, 23'b0}; // Inf
-                        output_c_ready = 1'b1;
-                    end 
-                    else begin
-                        output_c = 32'hFFC00000;
-                        output_c_ready = 1'b1;
-                    end 
-                end
             end
             //  0 + 0 (sign depand on & each other)
             else if (Zero_a && Zero_b) begin
