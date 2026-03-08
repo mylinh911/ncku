@@ -205,23 +205,11 @@ module FPU_adder(
 						end 
 					end
 				end else if (Inf_a) begin
-					if (!sub) begin
-						output_c = {sign_a, 8'hFF, 23'b0}; // Inf
-						output_c_ready = 1'b1;
-					end 
-					else begin
-						output_c = 32'hFFC00000;
-						output_c_ready = 1'b1;
-					end
+					output_c = {sign_a, 8'hFF, 23'b0}; // Inf
+					output_c_ready = 1'b1;
 				end else if (Inf_b) begin
-					if (!sub) begin
-						output_c = {sign_b, 8'hFF, 23'b0}; // Inf
-						output_c_ready = 1'b1;
-					end 
-					else begin
-						output_c = 32'hFFC00000;
-						output_c_ready = 1'b1;
-					end 
+					output_c = {sign_b, 8'hFF, 23'b0}; // Inf
+					output_c_ready = 1'b1;
 				end
                 if (sign_a == sign_b) begin
                     if (!sub) begin
