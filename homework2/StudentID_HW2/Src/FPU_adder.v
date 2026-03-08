@@ -104,7 +104,7 @@ module FPU_adder(
 
 				for (i = 0; i < 24; i = i + 1) begin
 					if ((sum_frac_norm[23] == 0) && (sum_exp_norm > 0)) begin
-						guard_bit = round_bit;
+						guard_bit = 0;
 						round_bit = 0;
 						sticky_bit = 0;
 						sum_frac_norm = sum_frac_norm << 1;
