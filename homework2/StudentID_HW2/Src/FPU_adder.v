@@ -126,68 +126,128 @@ module FPU_adder(
 		end
 	end
 
+	always @(*) begin
+        // Khởi tạo mặc định để tránh sinh ra Latch
+        output_c = 32'b0;
+        output_c_ready = 1'b0;
+
+        if (rst) begin
+            output_c = 32'b0;
+            output_c_ready = 1'b1;
+        end
+        else if (enable) begin
+            if (!(NaN_a || NaN_b || Inf_a || Inf_b || Zero_a || Zero_b)) begin
+                // Normal case
+                output_c = {sum_sign, sum_exp_norm, sum_frac_norm[22:0]};
+                output_c_ready = 1'b1;
+                
+            end else if (NaN_a || NaN_b) begin
+                output_c = 32'hFFC00000; // NaN
+                output_c_ready = 1'b1;
+            end
+            // Any inf in operand
+            else if (Inf_a || Inf_b) begin
+                if (sign_a == sign_b) begin
+                    if (!sub) begin
+                        output_c = {sign_a, 8'hFF, 23'b0}; // Inf
+                        output_c_ready = 1'b1;
+                    end 
+                    else begin
+                        output_c = 32'hFFC00000;
+                        output_c_ready = 1'b1;
+                    end
+                end
+                // sign mismatch inf (+inf + -inf)
+                else begin
+                    if (sub) begin
+                        output_c = {sign_a, 8'hFF, 23'b0}; // Inf
+                        output_c_ready = 1'b1;
+                    end 
+                    else begin
+                        output_c = 32'hFFC00000;
+                        output_c_ready = 1'b1;
+                    end 
+                end
+            end
+            //  0 + 0 (sign depand on & each other)
+            else if (Zero_a && Zero_b) begin
+                output_c = (sign_a && sign_b) ? 32'h80000000 : 32'h00000000;
+                output_c_ready = 1'b1;
+            end
+            // Only a 0 in operand
+            else if (Zero_a && !Zero_b) begin
+                output_c = (sub) ? {~sign_b, exp_b, frac_b} : {sign_b, exp_b, frac_b};
+                output_c_ready = 1'b1;
+            end
+            else if (!Zero_a && Zero_b) begin
+                output_c = input_a;
+                output_c_ready = 1'b1;
+            end
+        end
+        // Nếu enable == 0, các giá trị sẽ tự động nhận giá trị khởi tạo (32'b0) ở đầu khối always
+    end
 
 //put ur design here
-	always @(posedge clk or posedge rst) begin
-		if (rst) begin
-			output_c <= 32'b0;
-			output_c_ready <= 1'b1;
-		end
-		else begin
-			if (enable) begin
-				if (!(NaN_a || NaN_b || Inf_a || Inf_b || Zero_a || Zero_b)) begin
-					// Normal case
-					output_c <= {sum_sign, sum_exp_norm, sum_frac_norm[22:0]};
-					output_c_ready <= 1'b1;
+	// always @(posedge clk or posedge rst) begin
+	// 	if (rst) begin
+	// 		output_c <= 32'b0;
+	// 		output_c_ready <= 1'b1;
+	// 	end
+	// 	else begin
+	// 		if (enable) begin
+	// 			if (!(NaN_a || NaN_b || Inf_a || Inf_b || Zero_a || Zero_b)) begin
+	// 				// Normal case
+	// 				output_c <= {sum_sign, sum_exp_norm, sum_frac_norm[22:0]};
+	// 				output_c_ready <= 1'b1;
 					
-				end else if (NaN_a || NaN_b) begin
-					output_c <= 32'hFFC00000; // NaN
-					output_c_ready <= 1'b1;
-				end
-				// Any inf in operand
-				else if (Inf_a || Inf_b) begin
-					if (sign_a == sign_b) begin
-						if (!sub) begin
-							output_c <= {sign_a, 8'hFF, 23'b0}; // Inf
-							output_c_ready <= 1'b1;
-						end 
-						else begin
-							output_c <= 32'hFFC00000;
-							output_c_ready <= 1'b1;
-						end
-					end
-					// sign mismatch inf (+inf + -inf)
-					else begin
-						if (sub) begin
-							output_c <= {sign_a, 8'hFF, 23'b0}; // Inf
-							output_c_ready <= 1'b1;
-						end	
-						else begin
-							output_c <= 32'hFFC00000;
-							output_c_ready <= 1'b1;
-						end 
-					end
-				end
-				//  0 + 0 (sign depand on & each other)
-				else if (Zero_a && Zero_b) begin
-					output_c <= (sign_a && sign_b) ? 32'h80000000 : 32'h00000000;
-					output_c_ready <= 1'b1;
-				end
-				// Only a 0 in operand
-				else if (Zero_a && !Zero_b) begin
-					output_c <= (sub) ? {~sign_b, exp_b, frac_b} : {sign_b, exp_b, frac_b};
-					output_c_ready <= 1'b1;
-				end
-				else if (!Zero_a && Zero_b) begin
-					output_c <= input_a;
-					output_c_ready <= 1'b1;
-				end
-			end
-			else begin
-				output_c <= output_c;
-				output_c_ready <= output_c_ready;
-			end
-		end
-	end
+	// 			end else if (NaN_a || NaN_b) begin
+	// 				output_c <= 32'hFFC00000; // NaN
+	// 				output_c_ready <= 1'b1;
+	// 			end
+	// 			// Any inf in operand
+	// 			else if (Inf_a || Inf_b) begin
+	// 				if (sign_a == sign_b) begin
+	// 					if (!sub) begin
+	// 						output_c <= {sign_a, 8'hFF, 23'b0}; // Inf
+	// 						output_c_ready <= 1'b1;
+	// 					end 
+	// 					else begin
+	// 						output_c <= 32'hFFC00000;
+	// 						output_c_ready <= 1'b1;
+	// 					end
+	// 				end
+	// 				// sign mismatch inf (+inf + -inf)
+	// 				else begin
+	// 					if (sub) begin
+	// 						output_c <= {sign_a, 8'hFF, 23'b0}; // Inf
+	// 						output_c_ready <= 1'b1;
+	// 					end	
+	// 					else begin
+	// 						output_c <= 32'hFFC00000;
+	// 						output_c_ready <= 1'b1;
+	// 					end 
+	// 				end
+	// 			end
+	// 			//  0 + 0 (sign depand on & each other)
+	// 			else if (Zero_a && Zero_b) begin
+	// 				output_c <= (sign_a && sign_b) ? 32'h80000000 : 32'h00000000;
+	// 				output_c_ready <= 1'b1;
+	// 			end
+	// 			// Only a 0 in operand
+	// 			else if (Zero_a && !Zero_b) begin
+	// 				output_c <= (sub) ? {~sign_b, exp_b, frac_b} : {sign_b, exp_b, frac_b};
+	// 				output_c_ready <= 1'b1;
+	// 			end
+	// 			else if (!Zero_a && Zero_b) begin
+	// 				output_c <= input_a;
+	// 				output_c_ready <= 1'b1;
+	// 			end
+	// 		end
+	// 		else begin
+	// 			output_c <= 32'b0;
+	// 			output_c_ready <= 1'b0;
+	// 		end
+	// 	end
+	// end
   
 endmodule        
