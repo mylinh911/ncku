@@ -183,7 +183,7 @@ module FPU_adder(
             //     output_c = input_a;
             //     output_c_ready = 1'b1;
             // end
-        end
+        // end
         // Nếu enable == 0, các giá trị sẽ tự động nhận giá trị khởi tạo (32'b0) ở đầu khối always
     end
 
