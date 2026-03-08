@@ -15,7 +15,7 @@ FLP_NR_MXCS FLP_NO_ASRT REG_NR_RWRC INS_NR_INPR MOD_NS_GLGC OTP_NR_ASYA}
 ##------------------Dont touch----------------------##
 
 # import and elaborate design //
-analyze -v2k ../Src/FPU.v; ## modify your file name ##
+analyze -v2k homework2\StudentID_HW2\Src\FPU.v; ## modify your file name ##
 elaborate -bbox true -top FPU; ## modify your top module ##
 
 # Setup clock and reset
