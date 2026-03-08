@@ -55,19 +55,32 @@ module FPU_adder(
 		round_bit  = 1'b0;
 		sticky_bit = 1'b0;
 
-		if (delta_exp >= 1)
-			guard_bit = small_frac[delta_exp-1];
+		// 2. Trích xuất Guard an toàn (Chỉ lấy khi chỉ số nằm trong khoảng 0 -> 23)
+        // Nếu delta_exp >= 25, guard_bit tự động bằng 0
+        if (delta_exp >= 1 && delta_exp <= 24) begin
+            guard_bit = small_frac[delta_exp - 1];
+        end
 
-		if (delta_exp >= 2)
-			round_bit = small_frac[delta_exp-2];
+        // 3. Trích xuất Round an toàn (Chỉ lấy khi chỉ số nằm trong khoảng 0 -> 23)
+        // Nếu delta_exp >= 26, round_bit tự động bằng 0
+        if (delta_exp >= 2 && delta_exp <= 25) begin
+            round_bit = small_frac[delta_exp - 2];
+        end
 
-		if (delta_exp >= 3) begin
-			sticky_bit = 1'b0;
-			for (i = 0; i <= 23; i = i + 1) begin
-				if (i < delta_exp-2)
-					sticky_bit = sticky_bit | small_frac[i];
-			end
-		end
+        // 4. Trích xuất Sticky an toàn
+        if (delta_exp >= 3) begin
+            if (delta_exp > 25) begin
+                // Nếu dịch quá xa, toàn bộ 24 bit của số nhỏ đều rơi hết vào giỏ Sticky
+                sticky_bit = |small_frac; 
+            end else begin
+                sticky_bit = 1'b0;
+                for (i = 0; i < 24; i = i + 1) begin
+                    if (i < delta_exp - 2) begin
+                        sticky_bit = sticky_bit | small_frac[i];
+                    end
+                end
+            end
+        end
 		
 		if (!(NaN_a || NaN_b || Inf_a || Inf_b || Zero_a || Zero_b)) begin
             sum_exp = (exp_a > exp_b) ? exp_a : exp_b; 
