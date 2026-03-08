@@ -92,8 +92,12 @@ module FPU_adder(
 
 			// Handle carry, cancellation
 			if (sum_frac[24]) begin
+				stick_bit = sticky_bit | round_bit;
+				round_bit = guard_bit;
+				guard_bit = sum_frac[0];
 				sum_frac_norm = sum_frac >> 1;
 				sum_exp_norm = sum_exp + 8'd1;
+				
 			end else begin
 				sum_exp_norm = sum_exp;
 				sum_frac_norm = sum_frac;
