@@ -44,6 +44,7 @@ module FPU_adder(
 	reg [24:0] sum_frac, sum_frac_norm;
 	reg [7:0] sum_exp, sum_exp_norm;
 	reg sum_sign;
+	reg [26:0] norm_reg;
 
 	integer i;
 
@@ -102,7 +103,6 @@ module FPU_adder(
 				sum_exp_norm = sum_exp;
 				sum_frac_norm = sum_frac;
 
-				reg [26:0] norm_reg;
 				norm_reg = {sum_frac_norm[23:0], guard_bit, round_bit, sticky_bit};
 
 				// Vòng lặp dịch trái nếu MSB chưa phải là 1 (Cancellation)
