@@ -128,13 +128,13 @@ module FPU_adder(
 
 
 //put ur design here
-	always @(negedge clk or posedge clk or posedge rst) begin
+	always @(negedge clk or posedge clk or posedge rst or posedge enable) begin
 		if (rst) begin
 			output_c <= 32'b0;
 			output_c_ready <= 1'b1;
 		end
 		else begin
-			if (enable) begin
+			// if (enable) begin
 				if (!(NaN_a || NaN_b || Inf_a || Inf_b || Zero_a || Zero_b)) begin
 					// Normal case
 					output_c <= {sum_sign, sum_exp_norm, sum_frac_norm[22:0]};
@@ -187,7 +187,7 @@ module FPU_adder(
 				output_c <= output_c;
 				output_c_ready <= output_c_ready;
 			end
-		end
+		// end
 	end
   
 endmodule        
