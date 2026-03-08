@@ -183,10 +183,10 @@ module FPU_adder(
 					output_c_ready <= 1'b1;
 				end
 			end
-			else begin
-				output_c <= output_c;
-				output_c_ready <= output_c_ready;
-			end
+			// else begin
+			// 	output_c <= output_c;
+			// 	output_c_ready <= output_c_ready;
+			// end
 		// end
 	end
   
