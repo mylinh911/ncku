@@ -182,6 +182,47 @@ module FPU_adder(
             end
             // Any inf in operand
             else if (Inf_a || Inf_b) begin
+				if (Inf_a && Inf_b) begin
+					if (sign_a == sign_b) begin
+						if (!sub) begin
+							output_c = {sign_a, 8'hFF, 23'b0}; // Inf
+							output_c_ready = 1'b1;
+						end 
+						else begin
+							output_c = 32'hFFC00000;
+							output_c_ready = 1'b1;
+						end
+					end
+					// sign mismatch inf (+inf + -inf)
+					else begin
+						if (sub) begin
+							output_c = {sign_a, 8'hFF, 23'b0}; // Inf
+							output_c_ready = 1'b1;
+						end 
+						else begin
+							output_c = 32'hFFC00000;
+							output_c_ready = 1'b1;
+						end 
+					end
+				end else if (Inf_a) begin
+					if (!sub) begin
+						output_c = {sign_a, 8'hFF, 23'b0}; // Inf
+						output_c_ready = 1'b1;
+					end 
+					else begin
+						output_c = 32'hFFC00000;
+						output_c_ready = 1'b1;
+					end
+				end else if (Inf_b) begin
+					if (!sub) begin
+						output_c = {sign_b, 8'hFF, 23'b0}; // Inf
+						output_c_ready = 1'b1;
+					end 
+					else begin
+						output_c = 32'hFFC00000;
+						output_c_ready = 1'b1;
+					end 
+				end
                 if (sign_a == sign_b) begin
                     if (!sub) begin
                         output_c = {sign_a, 8'hFF, 23'b0}; // Inf
