@@ -34,26 +34,20 @@ module FPU(
         .answer(comparator_result)       
     );
 
-    always @(posedge clk or posedge rst) begin
-        if (rst) begin
-            co <= 32'b0;
-            valid <= 1'b1;
+    always @(*) begin
+        if (enable) begin
+            if (instruction[1]) begin
+                co = adder_result;
+                valid = adder_valid;
+            end
+            else begin 
+                co = comparator_result;
+                valid = 1'b1;
+            end
         end
         else begin
-            if (enable) begin
-                if (instruction[1]) begin
-                    co <= adder_result;
-                    valid <= adder_valid;
-                end
-                else begin 
-                    co <= comparator_result;
-                    valid <= 1'b1;
-                end
-            end
-            else begin
-                co <= co;
-                valid <= valid;
-            end
+            co = co;
+            valid = valid;
         end
     end
 
