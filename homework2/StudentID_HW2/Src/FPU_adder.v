@@ -46,6 +46,9 @@ module FPU_adder(
 	reg sum_sign;
 
 	integer i;
+	reg [26:0] ext_frac_a, ext_frac_b;
+	reg [27:0] sum_frac_ext; // 28-bit để chứa cả bit tràn (carry out)
+	reg [26:0] temp_norm;
 
 	always @(*) begin
 		guard_bit  = 1'b0;
@@ -67,65 +70,77 @@ module FPU_adder(
 		end
 		
 		if (!(NaN_a || NaN_b || Inf_a || Inf_b || Zero_a || Zero_b)) begin
-			sum_exp = (exp_a > exp_b) ? exp_a : exp_b; // The exponent of the result is the larger one
+            sum_exp = (exp_a > exp_b) ? exp_a : exp_b; 
 
-			if (!sub) begin
-				if (sign_a == sign_b) begin
-					sum_frac = shifted_frac_a + shifted_frac_b;
-					sum_sign = sign_a; // Same sign, result has the same sign
-				end
-				else begin
-					sum_frac = (shifted_frac_a > shifted_frac_b) ? (shifted_frac_a - shifted_frac_b) : (shifted_frac_b - shifted_frac_a);
-					sum_sign = (shifted_frac_a > shifted_frac_b) ? sign_a : sign_b; // Different sign, result has the sign of the larger mantissa
-				end
-			end
-			else begin
-				if (sign_a == sign_b) begin
-					sum_frac = (shifted_frac_a > shifted_frac_b) ? (shifted_frac_a - shifted_frac_b) : (shifted_frac_b - shifted_frac_a);
-					sum_sign = (shifted_frac_a > shifted_frac_b) ? sign_a : ~sign_a;
-				end
-				else begin
-					sum_frac = shifted_frac_a + shifted_frac_b;
-					sum_sign = sign_a; // Same sign, result has the same sign
-				end	
-			end
+            // 1. GHÉP MANTISSA VÀ GRS THÀNH 27-BIT
+            if (exp_a > exp_b) begin
+                ext_frac_a = {shifted_frac_a, 3'b000};
+                ext_frac_b = {shifted_frac_b, guard_bit, round_bit, sticky_bit};
+            end else if (exp_b > exp_a) begin
+                ext_frac_a = {shifted_frac_a, guard_bit, round_bit, sticky_bit};
+                ext_frac_b = {shifted_frac_b, 3'b000};
+            end else begin
+                ext_frac_a = {shifted_frac_a, 3'b000};
+                ext_frac_b = {shifted_frac_b, 3'b000};
+            end
 
-			// Handle carry, cancellation
-			if (sum_frac[24]) begin
-				sticky_bit = sticky_bit | round_bit;
-				round_bit = guard_bit;
-				guard_bit = sum_frac[0];
-				sum_frac_norm = sum_frac >> 1;
-				sum_exp_norm = sum_exp + 8'd1;
-				
-			end else begin
-				sum_exp_norm = sum_exp;
-				sum_frac_norm = sum_frac;
+            // 2. TÍNH TOÁN TRÊN THANH GHI 27-BIT CHUẨN (Tự động handle mượn/nhớ bit)
+            if (!sub) begin
+                if (sign_a == sign_b) begin
+                    sum_frac_ext = ext_frac_a + ext_frac_b;
+                    sum_sign = sign_a;
+                end else begin
+                    sum_frac_ext = (ext_frac_a > ext_frac_b) ? (ext_frac_a - ext_frac_b) : (ext_frac_b - ext_frac_a);
+                    sum_sign = (ext_frac_a > ext_frac_b) ? sign_a : sign_b;
+                end
+            end else begin
+                if (sign_a == sign_b) begin
+                    sum_frac_ext = (ext_frac_a > ext_frac_b) ? (ext_frac_a - ext_frac_b) : (ext_frac_b - ext_frac_a);
+                    sum_sign = (ext_frac_a > ext_frac_b) ? sign_a : ~sign_a;
+                end else begin
+                    sum_frac_ext = ext_frac_a + ext_frac_b;
+                    sum_sign = sign_a;
+                end
+            end
 
-				for (i = 0; i < 24; i = i + 1) begin
-					if ((sum_frac_norm[23] == 0) && (sum_exp_norm > 0)) begin
-						guard_bit = 0;
-						round_bit = 0;
-						sticky_bit = 0;
-						sum_frac_norm = sum_frac_norm << 1;
-						sum_exp_norm  = sum_exp_norm - 8'd1;
-					end
-				end
-			end
-			// Apply rounding policy using GRS
-			if (guard_bit && (round_bit || sticky_bit || sum_frac_norm[0])) begin
-				sum_frac_norm = sum_frac_norm + 24'd1;
-				if (sum_frac_norm[24]) begin
-					sum_exp_norm = sum_exp_norm + 8'd1;
-					sum_frac_norm = sum_frac_norm >> 1;
-				end
-			end
-			else begin
-				sum_frac_norm = sum_frac_norm;
-				sum_exp_norm = sum_exp_norm;
-			end
-			
-		end 
+            // 3. CHUẨN HÓA (NORMALIZATION)
+            if (sum_frac_ext[27]) begin 
+                // Tràn bit (Carry out) -> Dịch phải 1 bit
+                sum_frac_norm = sum_frac_ext[27:4];
+                guard_bit     = sum_frac_ext[3];
+                round_bit     = sum_frac_ext[2];
+                sticky_bit    = sum_frac_ext[1] | sum_frac_ext[0]; // Gom các bit rớt ra vào sticky
+                sum_exp_norm  = sum_exp + 8'd1;
+            end else begin
+                // Không tràn -> Kiểm tra triệt tiêu (Cancellation) để dịch trái
+                sum_exp_norm = sum_exp;
+                temp_norm    = sum_frac_ext[26:0];
+
+                if (temp_norm != 0) begin
+                    for (i = 0; i < 24; i = i + 1) begin
+                        if ((temp_norm[26] == 0) && (sum_exp_norm > 0)) begin
+                            temp_norm    = temp_norm << 1;
+                            sum_exp_norm = sum_exp_norm - 8'd1;
+                        end
+                    end
+                end
+                
+                // Tách ngược lại Mantissa 24-bit và GRS sau khi đã dịch xong
+                sum_frac_norm = temp_norm[26:3];
+                guard_bit     = temp_norm[2];
+                round_bit     = temp_norm[1];
+                sticky_bit    = temp_norm[0];
+            end
+
+            // 4. LÀM TRÒN (ROUNDING)
+            if (guard_bit && (round_bit || sticky_bit || sum_frac_norm[0])) begin
+                sum_frac_norm = sum_frac_norm + 24'd1;
+                if (sum_frac_norm[24]) begin // Tràn sau khi làm tròn
+                    sum_exp_norm  = sum_exp_norm + 8'd1;
+                    sum_frac_norm = sum_frac_norm >> 1;
+                end
+            end
+        end
 		else begin
 			sum_frac_norm = 0;
 			sum_exp_norm = 0;

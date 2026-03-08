@@ -74,18 +74,38 @@ module FPU_comparator(
             else begin
                 if (exp_a != exp_b) begin
                     if (mode) begin
-                        answer <= (exp_a > exp_b) ? A : B;
+                        if (sign_a) begin
+                            answer <= (exp_a > exp_b) ? B : A;
+                        end
+                        else begin
+                            answer <= (exp_a > exp_b) ? A : B;
+                        end
                     end
                     else begin 
-                        answer <= (exp_a > exp_b) ? B : A;
+                        if (sign_a) begin
+                            answer <= (exp_a > exp_b) ? A : B;
+                        end
+                        else begin
+                            answer <= (exp_a > exp_b) ? B : A;
+                        end
                     end
                 end
                 else begin
                     if (mode) begin
-                        answer <= (frac_a > frac_b) ? A : B;
+                        if (sign_a) begin
+                            answer <= (frac_a > frac_b) ? B : A;
+                        end
+                        else begin
+                            answer <= (frac_a > frac_b) ? A : B;
+                        end
                     end
                     else begin
-                        answer <= (frac_a > frac_b) ? B : A;
+                        if (sign_a) begin
+                            answer <= (frac_a > frac_b) ? A : B;
+                        end
+                        else begin
+                            answer <= (frac_a > frac_b) ? B : A;
+                        end
                     end
                 end
             end
