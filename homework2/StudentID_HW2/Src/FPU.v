@@ -12,6 +12,7 @@ module FPU(
 );
 
     wire [31:0] adder_result;
+    wire adder_valid;
     wire [31:0] comparator_result;
     //put ur design here
 
@@ -23,7 +24,7 @@ module FPU(
         .clk(clk),
         .rst(rst),
         .output_c(adder_result),
-        .output_c_ready(valid)
+        .output_c_ready(adder_valid)
     );
 
     FPU_comparator comparator(
@@ -42,7 +43,7 @@ module FPU(
             if (enable) begin
                 if (instruction[1]) begin
                     co <= adder_result;
-                    valid <= 1'b1;
+                    valid <= adder_valid;
                 end
                 else begin 
                     co <= comparator_result;
