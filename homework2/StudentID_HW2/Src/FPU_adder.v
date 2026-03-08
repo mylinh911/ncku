@@ -135,7 +135,7 @@ module FPU_adder(
             output_c = 32'b0;
             output_c_ready = 1'b1;
         end
-        else if (enable) begin
+        // else if (enable) begin
             if (!(NaN_a || NaN_b || Inf_a || Inf_b || Zero_a || Zero_b)) begin
                 // Normal case
                 output_c = {sum_sign, sum_exp_norm, sum_frac_norm[22:0]};
@@ -179,10 +179,10 @@ module FPU_adder(
                 output_c = (sub) ? {~sign_b, exp_b, frac_b} : {sign_b, exp_b, frac_b};
                 output_c_ready = 1'b1;
             end
-            else if (!Zero_a && Zero_b) begin
-                output_c = input_a;
-                output_c_ready = 1'b1;
-            end
+            // else if (!Zero_a && Zero_b) begin
+            //     output_c = input_a;
+            //     output_c_ready = 1'b1;
+            // end
         end
         // Nếu enable == 0, các giá trị sẽ tự động nhận giá trị khởi tạo (32'b0) ở đầu khối always
     end
