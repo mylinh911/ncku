@@ -227,7 +227,7 @@ module top(
     );
 
     wire [31:0] wd_result_including_csr_out;
-    mux wd_result_including_csr_mux(
+    mux_2to1 wd_result_including_csr_mux(
         .in0(wd_result_mux),
         .in1(csr_out),
         .sel(csr_result),

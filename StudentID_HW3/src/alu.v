@@ -1,3 +1,5 @@
+`include "../src/mul.v"
+
 module alu(
     input [31:0] src_a,
     input [31:0] src_b,
