@@ -58,7 +58,7 @@ module top(
     wire [1:0] load_store_size;
     wire load_signed;
 
-    wire cpu_enable = ((dm_request | mem_write) ? dm_valid : 1'b1) & im_valid;
+    wire cpu_enable = ((dm_req | mem_write) ? dm_valid : 1'b1) & im_valid;
 
     pc pc_reg(
         .clk(clk),
