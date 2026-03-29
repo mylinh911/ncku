@@ -6,13 +6,13 @@ module csr(
     output reg [31:0] csr_out
 );
     reg [63:0] num_ins;
-    reg [63:0] num_cycles,
+    reg [63:0] num_cycles;
 
     always @(posedge clk) begin
-        if (rst) 
+        if (rst) begin
             num_ins <= 64'd0;
             num_cycles <= 64'd0;
-        else begin
+        end else begin
             if (inc_inst) begin
                 num_ins <= num_ins + 1;
             end
