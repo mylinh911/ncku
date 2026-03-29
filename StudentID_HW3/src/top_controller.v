@@ -40,7 +40,7 @@ module top_controller(
         .result_src(result_src),
         .csr_result(csr_result),
         .branch(branch),
-        .jump(jump)
+        .jump(jump),
         .dm_request(dm_request)
     );
 
