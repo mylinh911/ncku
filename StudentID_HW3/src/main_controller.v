@@ -11,7 +11,6 @@ module main_controller(
     output reg branch,
     output reg jump,
     output reg dm_request,
-    output reg is_mem_instruction
 );
 
     always @(*) begin
@@ -26,7 +25,6 @@ module main_controller(
         branch     = 1'b0;
         jump = 1'b0;
         dm_request = 1'b0;
-        is_mem_instruction = 1'b0;
 
         case (opcode)
             7'b0110011: begin // R-Type

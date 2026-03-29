@@ -191,7 +191,7 @@ module top(
         .dm_bit_en(dm_bit_en)        
     );
 
-    assign dm_addr = alu_result;
+    assign dm_addr = alu_result[13:0];
 
     wire [31:0] filted_read_data;
 
@@ -209,13 +209,14 @@ module top(
         .in0(alu_result),
         .in1(filted_read_data),
         .in2(imm_ext),
-        .in3(pc_plus4),
+        .in3(pc_plus_4),
         .sel(result_src),
         .out(result_out)
     );
 
     wire [63:0] num_ins;
     wire [63:0] num_cycle;
+    wire [31:0] csr_out;
 
     csr csr_unit(
         .clk(clk),
