@@ -10,7 +10,7 @@ module main_controller(
     output reg csr_result,
     output reg branch,
     output reg jump,
-    output reg dm_request,
+    output reg dm_request
 );
 
     always @(*) begin
