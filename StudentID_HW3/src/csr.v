@@ -2,7 +2,7 @@ module csr(
     input clk,
     input rst,
     input [11:0] csr_addr,
-    input inc_inst
+    input inc_inst,
     output reg [31:0] csr_out,
 
 );
