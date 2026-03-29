@@ -1,3 +1,8 @@
+`include "../src/main_controller.v"
+`include "../src/alu_controller.v"
+`include "../src/mem_op_controller.v"
+`include "../src/pc_controller.v"
+
 module top_controller(
     input [6:0] funct7,
     input [2:0] funct3,

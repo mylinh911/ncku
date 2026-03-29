@@ -1,3 +1,16 @@
+`include "../src/pc.v"
+`include "../src/pc_adder.v"
+`include "../src/mux.v"
+`include "../src/decoder.v"
+`include "../src/reg_file.v"
+`include "../src/imm_extend.v"
+`include "../src/alu.v"
+`include "../src/store_filter.v"
+`include "../src/ld_filter.v"
+`include "../src/jb_unit.v"
+`include "../src/csr.v"
+`include "../src/top_controller.v"
+
 module top(
     input           clk,
     input           rst,
@@ -45,7 +58,7 @@ module top(
     wire [1:0] load_store_size;
     wire load_signed;
 
-    wire cpu_enable = ((dm_request | mem_write) ? dm_valid : 1'b1) & im_valid;
+    wire cpu_enable = ((dm_req | mem_write) ? dm_valid : 1'b1) & im_valid;
 
     pc pc_reg(
         .clk(clk),
@@ -60,7 +73,6 @@ module top(
         .pc_plus_4(pc_plus_4)
     );  
 
-    wire pc_src;
     wire [31:0] jb_unit_result;
 
     mux_2to1 pc_mux(
