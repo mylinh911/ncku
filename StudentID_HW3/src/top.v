@@ -130,6 +130,7 @@ module top(
     wire actual_reg_write = reg_write & cpu_enable; 
     reg_file reg_file_unit(
         .clk(clk),
+        .rst(rst),
         .reg_write(actual_reg_write),
         .rs1(rs1),
         .rs2(rs2),

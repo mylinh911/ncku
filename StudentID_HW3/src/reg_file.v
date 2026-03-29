@@ -1,5 +1,6 @@
 module reg_file(
     input clk,
+    input rst,
     input reg_write,
     input [4:0] rs1,
     input [4:0] rs2,
@@ -21,8 +22,12 @@ module reg_file(
     assign rd1 = (rs1 != 0) ? registers[rs1] : 32'd0; 
     assign rd2 = (rs2 != 0) ? registers[rs2] : 32'd0; 
 
-    always @(posedge clk) begin
-        if (reg_write && (rd != 5'd0)) begin
+    always @(posedge clk or posedge rst) begin
+        if (rst) begin
+            for (i = 0; i < 32; i = i + 1) begin
+                registers[i] = 32'd0;
+            end
+        end else if (reg_write && (rd != 5'd0)) begin
             registers[rd] <= wd;
         end
     end

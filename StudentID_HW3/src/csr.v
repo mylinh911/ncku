@@ -8,7 +8,7 @@ module csr(
     reg [63:0] num_ins;
     reg [63:0] num_cycles;
 
-    always @(posedge clk) begin
+    always @(posedge clk or posedge rst) begin
         if (rst) begin
             num_ins <= 64'd0;
             num_cycles <= 64'd0;
