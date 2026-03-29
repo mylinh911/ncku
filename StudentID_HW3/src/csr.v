@@ -3,8 +3,7 @@ module csr(
     input rst,
     input [11:0] csr_addr,
     input inc_inst,
-    output reg [31:0] csr_out,
-
+    output reg [31:0] csr_out
 );
     reg [63:0] num_ins;
     reg [63:0] num_cycles,
